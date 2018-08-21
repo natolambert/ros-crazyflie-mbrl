@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/hiro/crazyflie_ros/install/setup.sh

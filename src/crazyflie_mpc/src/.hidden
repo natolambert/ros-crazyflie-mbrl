@@ -1,0 +1,15 @@
+controllers.pyc
+dynamics_crazyflie_linearized.pyc
+dynamics_ionocraft.pyc
+dynamics.pyc
+lossfnc_pnngaussian.pyc
+model_general_nn.pyc
+models.pyc
+MPController.pyc
+rundynamics_multimodel.pyc
+rundynamics.pyc
+SplitModel.pyc
+Swish.pyc
+test_run_multi.pyc
+test_run.pyc
+utils_data.pyc

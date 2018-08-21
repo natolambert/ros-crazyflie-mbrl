@@ -1,0 +1,40 @@
+To run CF with MPC:
+	roslaunch crazyflie_driver crazyflie_server.launch 
+
+	roslaunch crazyflie_driver crazyflie_add.launch uri:=radio://0/73/2M
+
+	rosrun crazyflie_mpc MPController.py
+
+
+Get to MPC files
+	roscd crazyflie_mpc/src
+
+
+MPC ~/crazyflie_ros/src/crazyflie_mpc/src:
+chooses file based on "multi_model" flag in controllers.py
+-- rundynamics.py
+-- rundynamics_multimodel.py
+	Flags:
+		graph	- if graphs should be generated or not
+		dX	- next state vs change in state. Needs to reflect how model predicts
+		normal	- use normal distribution vs uniform (only = False works, in future remove this flag and option for normal)
+	Hard-coded params:
+		steps	- quantization of uniform distribution
+	Objective function:
+		comment/uncomment/change objective_vals.add_ lines (near 185)
+
+ROS Node:
+-- MPController.py
+	-- comment out pub.publish(msg) to stop motor control form being sent to CF on line 244 or so after the msg.mN are assigned.
+	-- Hard-coded params:
+		uncontrollable_state	- at what degree the kill switch should be triggered
+		N in mpc1 initialization- number of random actions
+		T in mpc1 initialization- number of time steps
+		variance in mpc1 initial- half the range for uniform distribution (rename and make full range?) 
+	-- optimizer and initialization of Objective fuctions not necessary (moved to rundynamics and on GPU) 
+
+
+Testing:
+-- run.py runs a simple test on a model through the MPC
+-- can change multi model vs single by import
+	-- test_run.py vs test_run_multi.py
