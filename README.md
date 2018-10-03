@@ -3,11 +3,8 @@ crazyflie_ros-pwm-control
 
 Clone the package into your catkin workspace:
 ```
-git clone https://github.com/josephyaconelli/crazyflie_ros-pwm-control.git
-cd crazyflie_ros
-git submodule init
-git submodule update
-```
+git clone https://github.com/natolambert/crazyflie-ros-mbrl.git
+cd crazyflie_ros```
 
 Use `catkin_make` on your workspace to compile.
 
@@ -28,4 +25,5 @@ uint16 m3
 uint16 m4
 ```
 
-Intended for use in conjunction with https://github.com/josephyaconelli/crazyflie-firmware-pwm-control
+Intended for use in conjunction with https://github.com/natolambert/crazyflie-firmware-pwm-control
+
