@@ -157,12 +157,10 @@ void Crazyflie::sendPositionSetpoint(
 }
 
 void Crazyflie::sendHoverSetpoint(
-  float vx,
-  float vy,
-  float yawrate,
-  float zDistance)
+  bool controllerFlag,
+  float thrust)
 {
-  crtpHoverSetpointRequest request(vx, vy, yawrate, zDistance);
+  crtpHoverSetpointRequest request(controllerFlag, thrust);
   sendPacket((const uint8_t*)&request, sizeof(request));
 }
 

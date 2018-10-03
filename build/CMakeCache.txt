@@ -276,6 +276,9 @@ _gtest_INCLUDES:FILEPATH=/usr/include/gtest/gtest.h
 //Path to a file.
 _gtest_SOURCES:FILEPATH=/usr/src/gtest/src/gtest.cc
 
+//Path to a file.
+_path_name:FILEPATH=_path_name-NOTFOUND
+
 //The directory containing a CMake configuration file for actionlib.
 actionlib_DIR:PATH=/opt/ros/kinetic/share/actionlib/cmake
 
@@ -335,6 +338,9 @@ crazyflie_driver_SOURCE_DIR:STATIC=/home/hiro/crazyflie_ros/src/crazyflie_driver
 
 //Value Computed by CMake
 crazyflie_mpc_BINARY_DIR:STATIC=/home/hiro/crazyflie_ros/build/crazyflie_mpc
+
+//Dependencies for target
+crazyflie_mpc_LIB_DEPENDS:STATIC=
 
 //Value Computed by CMake
 crazyflie_mpc_SOURCE_DIR:STATIC=/home/hiro/crazyflie_ros/src/crazyflie_mpc

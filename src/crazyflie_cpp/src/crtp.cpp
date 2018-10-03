@@ -22,7 +22,7 @@ static inline uint32_t quatcompress(float const q[4])
 	// this avoids having to send its sign bit.
 	unsigned negate = q[i_largest] < 0;
 
-	// 1/sqrt(2) is the largest possible value 
+	// 1/sqrt(2) is the largest possible value
 	// of the second-largest element in a unit quaternion.
 	float const SMALL_MAX = 1.0 / sqrt(2);
 
@@ -94,16 +94,11 @@ crtpStopRequest::crtpStopRequest()
 
 // m/s for velocity, deg/s for yawrate, and m for zDistance
 crtpHoverSetpointRequest::crtpHoverSetpointRequest(
-	float vx,
-	float vy,
-	float yawrate,
-	float zDistance)
+	bool controllerFlag,
+  float thrust)
 	: header(0X07, 0), type(5)
 {
-	this->vx = vx;
-	this->vy = vy;
-	this->yawrate = yawrate;
-	this->zDistance = zDistance;
+	this->controllerFlag = controllerFlag;
 }
 
 // m in position, degree in yaw

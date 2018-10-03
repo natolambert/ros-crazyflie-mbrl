@@ -643,16 +643,12 @@ CHECKSIZE(crtpStopRequest)
 struct crtpHoverSetpointRequest
 {
   crtpHoverSetpointRequest(
-    float vx,
-    float vy,
-    float yawrate,
-    float zDistance);
+  bool controllerFlag,
+  float thrust);
   const crtp header;
   uint8_t type;
-  float vx;
-  float vy;
-  float yawrate;
-  float zDistance;
+  bool controllerFlag;
+  float thrust;
 } __attribute__((packed));
 CHECKSIZE(crtpHoverSetpointRequest)
 

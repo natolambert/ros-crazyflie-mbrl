@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 
   ros::Subscriber sub = n.subscribe("crazyflie/log_compact_imu", 20, chatterCallback);
 
-  ros::Rate loop_rate(1000);  // NOL changed from 200
+  ros::Rate loop_rate(200);  // NOL changed from 200
 
   ros::spin();
 

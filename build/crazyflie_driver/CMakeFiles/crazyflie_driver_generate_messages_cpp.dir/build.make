@@ -83,7 +83,6 @@ crazyflie_driver/CMakeFiles/crazyflie_driver_generate_messages_cpp: /home/hiro/c
 
 /home/hiro/crazyflie_ros/devel/include/crazyflie_driver/Hover.h: /opt/ros/kinetic/lib/gencpp/gen_cpp.py
 /home/hiro/crazyflie_ros/devel/include/crazyflie_driver/Hover.h: /home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg
-/home/hiro/crazyflie_ros/devel/include/crazyflie_driver/Hover.h: /opt/ros/kinetic/share/std_msgs/msg/Header.msg
 /home/hiro/crazyflie_ros/devel/include/crazyflie_driver/Hover.h: /opt/ros/kinetic/share/gencpp/msg.h.template
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/hiro/crazyflie_ros/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating C++ code from crazyflie_driver/Hover.msg"
 	cd /home/hiro/crazyflie_ros/src/crazyflie_driver && /home/hiro/crazyflie_ros/build/catkin_generated/env_cached.sh /usr/bin/python /opt/ros/kinetic/share/gencpp/cmake/../../../lib/gencpp/gen_cpp.py /home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg -Icrazyflie_driver:/home/hiro/crazyflie_ros/src/crazyflie_driver/msg -Istd_msgs:/opt/ros/kinetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/kinetic/share/geometry_msgs/cmake/../msg -p crazyflie_driver -o /home/hiro/crazyflie_ros/devel/include/crazyflie_driver -e /opt/ros/kinetic/share/gencpp/cmake/..

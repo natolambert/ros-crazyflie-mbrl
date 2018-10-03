@@ -34,7 +34,7 @@ add_custom_target(_crazyflie_driver_generate_messages_check_deps_${_filename}
 
 get_filename_component(_filename "/home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg" NAME_WE)
 add_custom_target(_crazyflie_driver_generate_messages_check_deps_${_filename}
-  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "crazyflie_driver" "/home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg" "std_msgs/Header"
+  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "crazyflie_driver" "/home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg" ""
 )
 
 get_filename_component(_filename "/home/hiro/crazyflie_ros/src/crazyflie_driver/msg/GenericLogData.msg" NAME_WE)
@@ -132,7 +132,7 @@ _generate_msg_cpp(crazyflie_driver
 _generate_msg_cpp(crazyflie_driver
   "/home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg"
   "${MSG_I_FLAGS}"
-  "/opt/ros/kinetic/share/std_msgs/cmake/../msg/Header.msg"
+  ""
   ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/crazyflie_driver
 )
 _generate_msg_cpp(crazyflie_driver
@@ -317,7 +317,7 @@ _generate_msg_eus(crazyflie_driver
 _generate_msg_eus(crazyflie_driver
   "/home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg"
   "${MSG_I_FLAGS}"
-  "/opt/ros/kinetic/share/std_msgs/cmake/../msg/Header.msg"
+  ""
   ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/crazyflie_driver
 )
 _generate_msg_eus(crazyflie_driver
@@ -502,7 +502,7 @@ _generate_msg_lisp(crazyflie_driver
 _generate_msg_lisp(crazyflie_driver
   "/home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg"
   "${MSG_I_FLAGS}"
-  "/opt/ros/kinetic/share/std_msgs/cmake/../msg/Header.msg"
+  ""
   ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/crazyflie_driver
 )
 _generate_msg_lisp(crazyflie_driver
@@ -687,7 +687,7 @@ _generate_msg_nodejs(crazyflie_driver
 _generate_msg_nodejs(crazyflie_driver
   "/home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg"
   "${MSG_I_FLAGS}"
-  "/opt/ros/kinetic/share/std_msgs/cmake/../msg/Header.msg"
+  ""
   ${CATKIN_DEVEL_PREFIX}/${gennodejs_INSTALL_DIR}/crazyflie_driver
 )
 _generate_msg_nodejs(crazyflie_driver
@@ -872,7 +872,7 @@ _generate_msg_py(crazyflie_driver
 _generate_msg_py(crazyflie_driver
   "/home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg"
   "${MSG_I_FLAGS}"
-  "/opt/ros/kinetic/share/std_msgs/cmake/../msg/Header.msg"
+  ""
   ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/crazyflie_driver
 )
 _generate_msg_py(crazyflie_driver

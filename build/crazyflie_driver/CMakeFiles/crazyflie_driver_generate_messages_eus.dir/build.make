@@ -83,7 +83,6 @@ crazyflie_driver/CMakeFiles/crazyflie_driver_generate_messages_eus: /home/hiro/c
 
 /home/hiro/crazyflie_ros/devel/share/roseus/ros/crazyflie_driver/msg/Hover.l: /opt/ros/kinetic/lib/geneus/gen_eus.py
 /home/hiro/crazyflie_ros/devel/share/roseus/ros/crazyflie_driver/msg/Hover.l: /home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg
-/home/hiro/crazyflie_ros/devel/share/roseus/ros/crazyflie_driver/msg/Hover.l: /opt/ros/kinetic/share/std_msgs/msg/Header.msg
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/hiro/crazyflie_ros/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating EusLisp code from crazyflie_driver/Hover.msg"
 	cd /home/hiro/crazyflie_ros/build/crazyflie_driver && ../catkin_generated/env_cached.sh /usr/bin/python /opt/ros/kinetic/share/geneus/cmake/../../../lib/geneus/gen_eus.py /home/hiro/crazyflie_ros/src/crazyflie_driver/msg/Hover.msg -Icrazyflie_driver:/home/hiro/crazyflie_ros/src/crazyflie_driver/msg -Istd_msgs:/opt/ros/kinetic/share/std_msgs/cmake/../msg -Igeometry_msgs:/opt/ros/kinetic/share/geometry_msgs/cmake/../msg -p crazyflie_driver -o /home/hiro/crazyflie_ros/devel/share/roseus/ros/crazyflie_driver/msg
 

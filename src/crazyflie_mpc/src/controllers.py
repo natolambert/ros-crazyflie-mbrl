@@ -8,6 +8,7 @@ if multi_model:
   import rundynamics_multimodel as rd
 else:
   import rundynamics as rd
+  import rundynamics_stacked as rd_stack
 # Import models files for MPC controller
 from models import *
 import time
@@ -219,7 +220,7 @@ class MPController(Controller):
     # 1. random shooting control, with best reward being taken
     # 2. convext optimization solution on finite time horizon
 
-    def __init__(self, dynamics_learned, dynamics_true, dt_update, dt_control, Objective=[], N = 100, T=10, variance = .00001, method = 'Shooter'):
+    def __init__(self, dynamics_learned, dynamics_true, dt_update, dt_control, Objective=[], N = 100, T=10, variance = .00001, method = 'Shooter',numStack = 1):
         # initialize some variables
         # dynamics learned will be a model from models.py
         # dynamcis true is the dynamics file for getting some parameters
@@ -231,6 +232,7 @@ class MPController(Controller):
         self.dt_dynam = dynamics_true.get_dt
         dim = dynamics_true.get_dims[1]
         super(MPController, self).__init__(dt_update, dt_control, dim=dim)
+        self.numStack = numStack
 
         self.dynamics_model = dynamics_learned
         self.dynamics_true = dynamics_true
@@ -251,7 +253,7 @@ class MPController(Controller):
         self.zeros = np.zeros(12)
 
 
-    def update(self, current_state):
+    def update(self, current_state, last_action,meanAdjust):
         # function that returns desired control output
 
         if (self.method != 'Shooter'):
@@ -259,7 +261,8 @@ class MPController(Controller):
 
         # initialize some variables for only updating control at correct
         # if dt_u == dt_x R = 1, so always updates
-        Rdt = int(self.dt_control/self.dt_update)    # number of dynamics updates per new control update
+        #Rdt = int(self.dt_control/self.dt_update)    # number of dynamics updates per new control update
+        Rdt = 1
 
         # Simulate a bunch of random actions and then need a way to evaluate reward
         N = self.N
@@ -299,7 +302,10 @@ class MPController(Controller):
 
             #X_sim = rd.run(self.dynamics_model, actions_seq, current_state, [0,1,2,3,4,5,6,7,8])
             #X_sim, actions_seq = rd.run(N,T,4, self.dynamics_true.u_e, self.var, current_state, [0,1,2,3,4,5])
-            control = rd.run(N,T,4, self.dynamics_true.u_e, self.var, current_state, [0,1,2,3,4,5])
+
+            #control, objectives = rd.run(N,T,4, self.dynamics_true.u_e, self.var, current_state, [0,1,2,3,4,5,6,7,8])
+            # control, objectives = rd.run(N,T,4, self.dynamics_true.u_e, last_action, self.var, current_state, [0,1,2,3,4,5,6,7,8],numStack)
+            control, objectives, pred_state = rd_stack.run_stack(N,T,4, self.dynamics_true.u_e, last_action, self.var, current_state, [0,1,2,3,4,5,6,7,8],self.numStack ,meanAdjust)
 
             #seq_sim_cuda = simulate_learned_batch(self.dynamics_model, actions_seq, x0=current_state)
             #X_sim = seq_sim_cuda
@@ -343,7 +349,7 @@ class MPController(Controller):
         #print "Before NN: ", (before_nn_time - start_time), " NN: ", (after_nn_time - before_nn_time), " After NN: ", (end_time - after_nn_time), " Total: ", (end_time - start_time)
 
         #return self.control, self.Objective.data[mm_idx]
-        return control
+        return control, objectives, pred_state
 
 class Objective():
     # class of objective functions to be used in MPC and maybe future implementations. Takes in sets of sequences when optimizing!

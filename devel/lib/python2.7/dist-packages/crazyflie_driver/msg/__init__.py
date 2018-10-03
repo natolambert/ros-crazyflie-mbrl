@@ -6,4 +6,5 @@ from ._MotorControl import *
 from ._MotorControlwID import *
 from ._Position import *
 from ._TrajectoryPolynomialPiece import *
+from ._controllerFlag import *
 from ._crtpPacket import *

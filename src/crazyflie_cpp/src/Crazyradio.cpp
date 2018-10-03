@@ -34,8 +34,8 @@ Crazyradio::Crazyradio(
     setContCarrier(false);
     setAddress(0xE7E7E7E7E7);
     setPower(Power_0DBM);
-    setArc(3);
-    setArdBytes(32);
+    setArc(10);    // was 3
+    setArdBytes(8);  // was 32
     setAckEnable(true);
 }
 

@@ -17,6 +17,7 @@ c7c490f5b8fa8c97e78a76e394380fa6 /home/hiro/crazyflie_ros/devel/include/crazyfli
 5390e880d676a467bd415f0c40b183cc /home/hiro/crazyflie_ros/devel/include/crazyflie_driver/TrajectoryPolynomialPiece.h
 38a54d956a56720cce82f4c5918c3ee8 /home/hiro/crazyflie_ros/devel/include/crazyflie_driver/UpdateParams.h
 2a417ed5e0fd0358f9ed98a5d6d3b9ee /home/hiro/crazyflie_ros/devel/include/crazyflie_driver/UploadTrajectory.h
+28702f569f0b48d61e4784d329377c6f /home/hiro/crazyflie_ros/devel/include/crazyflie_driver/controllerFlag.h
 784a700e3249a26ea8430acd774660ca /home/hiro/crazyflie_ros/devel/include/crazyflie_driver/crtpPacket.h
 7fcb538cdd7d141a13b192d4e0930607 /home/hiro/crazyflie_ros/devel/include/crazyflie_driver/sendPacket.h
 c0f0fdc974ac2513e51b7089eb9f4fa4 /home/hiro/crazyflie_ros/devel/include/crazyflie_mpc/GenericLogData.h
@@ -32,6 +33,7 @@ cb01c6c52dffa3bdbc7713909ff067a4 /home/hiro/crazyflie_ros/devel/lib/python2.7/di
 8d6ca1c6ddd2f6ffddde43537c128810 /home/hiro/crazyflie_ros/devel/lib/python2.7/dist-packages/crazyflie_driver/msg/_Position.py
 38ee0ac1b33c9e83e0eb2dc73be51082 /home/hiro/crazyflie_ros/devel/lib/python2.7/dist-packages/crazyflie_driver/msg/_TrajectoryPolynomialPiece.py
 291a2f19806c1caf60fd1299c9cd48b7 /home/hiro/crazyflie_ros/devel/lib/python2.7/dist-packages/crazyflie_driver/msg/__init__.py
+093ecc733e33140489669b63aac5bef7 /home/hiro/crazyflie_ros/devel/lib/python2.7/dist-packages/crazyflie_driver/msg/_controllerFlag.py
 7b10c6aa3c7ce93bfb399efc7af37bab /home/hiro/crazyflie_ros/devel/lib/python2.7/dist-packages/crazyflie_driver/msg/_crtpPacket.py
 221d3055dbb5b9e17230d0f22e19db6d /home/hiro/crazyflie_ros/devel/lib/python2.7/dist-packages/crazyflie_driver/srv/_AddCrazyflie.py
 7ff0458ce5d71e2d91795f17c0e2219b /home/hiro/crazyflie_ros/devel/lib/python2.7/dist-packages/crazyflie_driver/srv/_GoTo.py
@@ -58,6 +60,7 @@ ddadc0779417b13afe146664f81d89af /home/hiro/crazyflie_ros/devel/share/common-lis
 366a19c0edda3dd6aeb245a224957a2b /home/hiro/crazyflie_ros/devel/share/common-lisp/ros/crazyflie_driver/msg/MotorControlwID.lisp
 14f7196a835f3d460f7416f7c625a233 /home/hiro/crazyflie_ros/devel/share/common-lisp/ros/crazyflie_driver/msg/Position.lisp
 f5e152a1ccc0c4cdf3e570c9aac26753 /home/hiro/crazyflie_ros/devel/share/common-lisp/ros/crazyflie_driver/msg/TrajectoryPolynomialPiece.lisp
+0cd50b36bb4a9bf78ccf00bfb8efd7f0 /home/hiro/crazyflie_ros/devel/share/common-lisp/ros/crazyflie_driver/msg/controllerFlag.lisp
 657e4f1b1c2e065a832ca5832499ebe1 /home/hiro/crazyflie_ros/devel/share/common-lisp/ros/crazyflie_driver/msg/crtpPacket.lisp
 64b603194721c2b3e1bfcced768c4986 /home/hiro/crazyflie_ros/devel/share/common-lisp/ros/crazyflie_driver/srv/AddCrazyflie.lisp
 c5668c235915d7690628503c22f69396 /home/hiro/crazyflie_ros/devel/share/common-lisp/ros/crazyflie_driver/srv/GoTo.lisp
@@ -82,6 +85,7 @@ a2e140ccd1a7f53a87431d1bd5e4ce96 /home/hiro/crazyflie_ros/devel/share/gennodejs/
 e86825c75b3e422913fce514967ec9b1 /home/hiro/crazyflie_ros/devel/share/gennodejs/ros/crazyflie_driver/msg/MotorControlwID.js
 460611d8d286c7198db7039ba1eda6f6 /home/hiro/crazyflie_ros/devel/share/gennodejs/ros/crazyflie_driver/msg/Position.js
 8915932b07043186e2a3fe63b398cdaf /home/hiro/crazyflie_ros/devel/share/gennodejs/ros/crazyflie_driver/msg/TrajectoryPolynomialPiece.js
+5edddcbd020d963b9fe23f1b0ebf5e20 /home/hiro/crazyflie_ros/devel/share/gennodejs/ros/crazyflie_driver/msg/controllerFlag.js
 312587fe7947a5563f806079734e7cf4 /home/hiro/crazyflie_ros/devel/share/gennodejs/ros/crazyflie_driver/msg/crtpPacket.js
 1e9f4beaa9ac859549475a374341e3ea /home/hiro/crazyflie_ros/devel/share/gennodejs/ros/crazyflie_driver/srv/AddCrazyflie.js
 d3896d418e84ab2e75036bcd23adf105 /home/hiro/crazyflie_ros/devel/share/gennodejs/ros/crazyflie_driver/srv/GoTo.js
@@ -107,6 +111,7 @@ dcde9e96530d08988a29638cb0174876 /home/hiro/crazyflie_ros/devel/share/roseus/ros
 ff9099fadaf0db8ca93c228c5f1b26a8 /home/hiro/crazyflie_ros/devel/share/roseus/ros/crazyflie_driver/msg/MotorControlwID.l
 0d2ca19018041381855e7d767a8f298c /home/hiro/crazyflie_ros/devel/share/roseus/ros/crazyflie_driver/msg/Position.l
 566b1dbdc627dc78b372613e089a56e6 /home/hiro/crazyflie_ros/devel/share/roseus/ros/crazyflie_driver/msg/TrajectoryPolynomialPiece.l
+5b3af24e299be35dbdb88658fbc207d6 /home/hiro/crazyflie_ros/devel/share/roseus/ros/crazyflie_driver/msg/controllerFlag.l
 d632b0fe29b27afc3bd4889b965c9058 /home/hiro/crazyflie_ros/devel/share/roseus/ros/crazyflie_driver/msg/crtpPacket.l
 ddc8aacaf721df895a61813f59f6db7a /home/hiro/crazyflie_ros/devel/share/roseus/ros/crazyflie_driver/srv/AddCrazyflie.l
 78a4b77068b63c741cb8f014c302cd61 /home/hiro/crazyflie_ros/devel/share/roseus/ros/crazyflie_driver/srv/GoTo.l
@@ -129,7 +134,7 @@ d5f190aabb3a413ecd66968fcd5b9d7f CMakeFiles/clean_test_results
 4f0c2436abd726441d0c9d4bcf37198d crazyflie_driver/CMakeFiles/_crazyflie_driver_generate_messages_check_deps_FullState
 f56d38e22b585141ab88de032c2b2469 crazyflie_driver/CMakeFiles/_crazyflie_driver_generate_messages_check_deps_GenericLogData
 2242901d61ad95cf68320d930e9a5ba4 crazyflie_driver/CMakeFiles/_crazyflie_driver_generate_messages_check_deps_GoTo
-f828e66ae097859fe1503ee4f20366de crazyflie_driver/CMakeFiles/_crazyflie_driver_generate_messages_check_deps_Hover
+8405405b66e1db8fef16ddf6d3fd74d2 crazyflie_driver/CMakeFiles/_crazyflie_driver_generate_messages_check_deps_Hover
 1e8f452214e2145d8f3fe797f8f3373e crazyflie_driver/CMakeFiles/_crazyflie_driver_generate_messages_check_deps_Land
 9cee0e87ae5524117c662be2df8448c9 crazyflie_driver/CMakeFiles/_crazyflie_driver_generate_messages_check_deps_LogBlock
 0c1e27335e55f167e4e9e16a12f60327 crazyflie_driver/CMakeFiles/_crazyflie_driver_generate_messages_check_deps_MotorControl

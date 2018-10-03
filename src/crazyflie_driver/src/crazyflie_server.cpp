@@ -235,12 +235,9 @@ void cmdHoverSetpoint(
   {
      //ROS_INFO("got a hover setpoint");
     if (!m_isEmergency) {
-      float vx = msg->vx;
-      float vy = msg->vy;
-      float yawRate = msg->yawrate;
-      float zDistance = msg->zDistance;
-
-      m_cf.sendHoverSetpoint(vx, vy, yawRate, zDistance);
+      bool controllerFlag = msg->controllerFlag;
+      float thrust = msg->thrust;
+      m_cf.sendHoverSetpoint(controllerFlag,thrust);
       m_sentSetpoint = true;
       //ROS_INFO("set a hover setpoint");
     }
@@ -408,7 +405,7 @@ void cmdPositionSetpoint(
     // m_subscribeCmdFullState = n.subscribe(m_tf_prefix + "/cmd_full_state", 1, &CrazyflieROS::cmdFullStateSetpoint, this);
     // m_subscribeExternalPosition = n.subscribe(m_tf_prefix + "/external_position", 1, &CrazyflieROS::positionMeasurementChanged, this);
     m_serviceEmergency = n.advertiseService(m_tf_prefix + "/emergency", &CrazyflieROS::emergency, this);
-    // m_subscribeCmdHover = n.subscribe(m_tf_prefix + "/cmd_hover", 1, &CrazyflieROS::cmdHoverSetpoint, this);
+    m_subscribeCmdHover = n.subscribe(m_tf_prefix + "/cmd_hover", 2, &CrazyflieROS::cmdHoverSetpoint, this);
     // m_subscribeCmdStop = n.subscribe(m_tf_prefix + "/cmd_stop", 1, &CrazyflieROS::cmdStop, this);
     // m_subscribeCmdPosition = n.subscribe(m_tf_prefix + "/cmd_position", 1, &CrazyflieROS::cmdPositionSetpoint, this);
 

@@ -128,11 +128,7 @@ def loadcsv(filename):
     actions = data[:,6:10]
     return states,actions
 
-# returns the elapsed milliseconds since the start of the program
-def millis():
-   dt = datetime.now() - start_time
-   ms = (dt.days * 24 * 60 * 60 + dt.seconds) * 1000 + dt.microseconds / 1000.0
-   return ms
+
 
 def unpack_cf_pwm(packed_pwm_data):
   unpacked_pwm_data = np.zeros((len(packed_pwm_data), 4))
@@ -181,20 +177,20 @@ def unpack_cf_imu(packed_imu_data_l, packed_imu_data_a):
     az = ((packed_imu_a >> 20) & mask)
 
     # scale back to normal (reflects values in custom cf firmware (sorry its so opaque!))
-    lx = (lx / 10.23) - 50
-    ly = (ly / 10.23) - 50
-    lz = (lz / 10.23) - 50
+    lx = (lx / 25.6) - 20
+    ly = (ly / 25.6) - 20
+    lz = (lz / 25.6) - 20
 
     ax = (ax / 1.42)  - 360
     ay = (ay / 1.42)  - 360
     az = (az / 1.42)  - 360
 
-    unpacked_imu_data[i][0] = lx
-    unpacked_imu_data[i][1] = ly
-    unpacked_imu_data[i][2] = lz
-    unpacked_imu_data[i][3] = ax
-    unpacked_imu_data[i][4] = ay
-    unpacked_imu_data[i][5] = az
+    unpacked_imu_data[i][3] = lx
+    unpacked_imu_data[i][4] = ly
+    unpacked_imu_data[i][5] = lz
+    unpacked_imu_data[i][0] = ax
+    unpacked_imu_data[i][1] = ay
+    unpacked_imu_data[i][2] = az
 
   return unpacked_imu_data
 
@@ -241,9 +237,9 @@ def unpack_cf_ypr(packed_ypr_data):
         p = ((packed_ypr_data >> 10) & mask)
         r = ((packed_ypr_data >> 20) & mask)
 
-        y = (y / 1.42)  - 360
-        p = (p / 1.42)  - 360
-        r = (r / 1.42)  - 360
+        y = (y / 2.84)  - 180
+        p = (p / 5.68)  - 90
+        r = (r / 5.68)  - 90
 
         unpacked_ypr[i][0] = y
         unpacked_ypr[i][1] = p

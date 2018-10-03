@@ -147,8 +147,6 @@ ros/builtin_message_traits.h
 -
 ros/message_operations.h
 -
-std_msgs/Header.h
--
 
 /home/hiro/crazyflie_ros/devel/include/crazyflie_driver/Land.h
 ros/service_traits.h
