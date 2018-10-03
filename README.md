@@ -4,7 +4,8 @@ crazyflie_ros-pwm-control
 Clone the package into your catkin workspace:
 ```
 git clone https://github.com/natolambert/crazyflie-ros-mbrl.git
-cd crazyflie_ros```
+cd crazyflie_ros
+```
 
 Use `catkin_make` on your workspace to compile.
 
@@ -25,5 +26,7 @@ uint16 m3
 uint16 m4
 ```
 
-Intended for use in conjunction with https://github.com/natolambert/crazyflie-firmware-pwm-control
+Intended for use in conjunction with https://github.com/natolambert/crazyflie-firmware-pwm-control.
+
+The implementation of potential note is the cuda MPC implementation in crazyflie_mpc directory. We achieve > 150Hz control frequency with a nueral network dynamics model by parallelization on a Nvidia titan XP.
 
