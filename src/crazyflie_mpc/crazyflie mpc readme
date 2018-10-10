@@ -1,7 +1,7 @@
 To run CF with MPC:
-	roslaunch crazyflie_driver crazyflie_server.launch 
+	roslaunch crazyflie_driver crazyflie_server.launch
 
-	roslaunch crazyflie_driver crazyflie_add.launch uri:=radio://0/73/2M
+	roslaunch crazyflie_driver crazyflie_add.launch uri:=radio://0/80/2M
 
 	rosrun crazyflie_mpc MPController.py
 
@@ -30,8 +30,8 @@ ROS Node:
 		uncontrollable_state	- at what degree the kill switch should be triggered
 		N in mpc1 initialization- number of random actions
 		T in mpc1 initialization- number of time steps
-		variance in mpc1 initial- half the range for uniform distribution (rename and make full range?) 
-	-- optimizer and initialization of Objective fuctions not necessary (moved to rundynamics and on GPU) 
+		variance in mpc1 initial- half the range for uniform distribution (rename and make full range?)
+	-- optimizer and initialization of Objective fuctions not necessary (moved to rundynamics and on GPU)
 
 
 Testing:

@@ -27,7 +27,7 @@ numStack = 4
 
 
 PWMequil = np.array([36334., 36847.,	39682.,	33483.])
-
+PWMequil = np.array([31687.1,	37954.7,	33384.8,	36220.11]) # new quad
 
 PWMdelta = np.array([0,0,0,0])
 pwm_bound = np.array([4])
@@ -38,7 +38,7 @@ ROLLcurr = np.array([0])
 OBJ = np.array([0])
 init = True
 init2 = True
-uncontrollable_state =  40
+uncontrollable_state =  27.5
 stop = False
 
 ############# ROS INTEGRATION ################
@@ -58,10 +58,10 @@ model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/sep12_fl
 
 
 
-x_prev = np.zeros([9])
-x_prev_cached = np.zeros([9])
+x_prev = np.zeros([10])
+x_prev_cached = np.zeros([10])
 # x_prev_cached = np.array([-.141, -.141, -.141, 2, 3, 29, .1, -.1, 9.76,0,0,0])
-x_prev_delta = np.zeros([9])
+x_prev_delta = np.zeros([10])
 ts = np.zeros([1])
 ts_cached = np.zeros([1])
 pwms_cached = np.zeros([4])
@@ -110,6 +110,10 @@ def callback(data):
   p = np.zeros([1])
   p[0] = data.values[-2]
 
+  # battery
+  b = np.zeros([1])
+  b[0] = data.values[-1]
+
   # Linear accle
   l = np.zeros([1])
   l[0] = data.values[1]
@@ -144,6 +148,7 @@ def callback(data):
   x_prev[6] = imu[0][3] #l_x
   x_prev[7] = imu[0][4] #l_y
   x_prev[8] = imu[0][5] #l_z
+  x_prev[9] = b[0]
 
   ts[0] = str(t)
   pwms_received[0] = pwms[0][0]
@@ -152,9 +157,9 @@ def callback(data):
   pwms_received[3] = pwms[0][3]
 
 
-  packet_id_temp = np.zeros([1])
-  packet_id_temp[0] = data.values[-1]
-  packet_id_rec[0] = int(packet_id_temp[0])
+  # packet_id_temp = np.zeros([1])
+  # packet_id_temp[0] = data.values[-1]
+  # packet_id_rec[0] = int(packet_id_temp[0])
 
 
   fetching_data = False
@@ -168,7 +173,7 @@ def callback(data):
 
   if ( (abs(x_prev[3]) >= uncontrollable_state) or
      (abs(x_prev[4]) >= uncontrollable_state) or
-     (abs(x_prev[6])+abs(x_prev[7])  >= 15) or
+     (abs(x_prev[6])+abs(x_prev[7])  >= 10) or
      # ( <= -6) or
      (x_prev[8] <= -6) or
      (abs(x_prev_delta[0]) > 70) or
@@ -178,16 +183,11 @@ def callback(data):
     stop = True
 
 
-def callbackID(data):
-    packet_id_temp = np.zeros([1])
-    packet_id_temp[0] = data.values[0]
-    packet_id_rec[0] = int(packet_id_temp[0])
-
 
 def nodecontroller():
   if logging:
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    log_folder = "/home/hiro/crazyflie_ros/src/crazyflie_mpc/src/_flightlogs/video/"
+    log_folder = "/home/hiro/crazyflie_ros/src/crazyflie_mpc/src/_flightlogs/_newquad1/100Hz_rand/"
     log = open(log_folder+'flight_log-'+timestr+'.csv',"w+")
     print(log)
   pub = rospy.Publisher('/cmd_vel', MotorControlwID, queue_size = 1)
@@ -196,7 +196,7 @@ def nodecontroller():
   rospy.init_node('MPController', anonymous=True)
   rospy.Subscriber('/state_data', GenericLogData, callback)
 
-  rate = rospy.Rate(175) # frequency of operation in hz
+  rate = rospy.Rate(100) # frequency of operation in hz
   testTime = 15000  	# Time to run realtime test, in ms
 
   # Take off and radio spinup flags
@@ -213,10 +213,10 @@ def nodecontroller():
   caughtFlag = False
 
 
-  takeoff_power = 1.2
+  takeoff_power = 1.22
   equilAdjust = takeoff_power-1
   takeoff_adjust = 0.3
-  takeoff_adjust_step = .0033*2
+  takeoff_adjust_step = .013 #007
   equil_step = .95
   hop_power = 0
   takeoff_time = 900
@@ -244,7 +244,7 @@ def nodecontroller():
 
 ################################ MPC ####################################
   #mpc1 = MPController(newNN, crazy, dt_x, dt_u, origin_minimizer, N=100, T=5, variance = 1000)
-  mpc1 = MPController(newNN, crazy, dt_x, dt_u, N=4000, T=3, variance =3200, numStack = numStack)
+  mpc1 = MPController(newNN, crazy, dt_x, dt_u, N=4000, T=2, variance =6000, numStack = numStack)
   print('...MPC Running')
 
 
@@ -260,7 +260,7 @@ def nodecontroller():
 ######################## Controller Input/Output ##################
   start_time = datetime.now()
   start_time = millis()
-  x_prev_cached = np.zeros([9])
+  x_prev_cached = np.zeros([10])
   u = np.zeros([4])
 
   # declare packet_id coutner
@@ -377,6 +377,7 @@ def nodecontroller():
                 u_prev_stacked[4:] = u_prev_stacked[:4*(numStack-1)]
                 u_prev_stacked[:4] = pwms_received
             else:
+                print("DROPPED PACKET")
                 x_prev_stacked[9:] = x_prev_stacked[:9*(numStack-1)]
                 x_prev_stacked[:9] = pred_state.cpu().detach().numpy()
 
@@ -433,6 +434,7 @@ def nodecontroller():
                 u_prev_stacked[4:] = u_prev_stacked[:4*(numStack-1)]
                 u_prev_stacked[:4] = pwms_received
             else:
+                print("DROPPED PACKET")
                 x_prev_stacked[9:] = x_prev_stacked[:9*(numStack-1)]
                 x_prev_stacked[:9] = pred_state.cpu().detach().numpy()
 
@@ -441,7 +443,7 @@ def nodecontroller():
                 u_prev_stacked[:4] = u
 
             equilAdjust = equil_step*equilAdjust
-            u, objval, pred_state = mpc1.update(x_prev_stacked,u_prev_stacked,1.1)   # UPDATE SHOULD RETURN PWMs
+            u, objval, pred_state = mpc1.update(x_prev_stacked,u_prev_stacked,1.05)   # UPDATE SHOULD RETURN PWMs
             u = u[:4]
             OBJ[0] = objval.cpu().detach().numpy()
 
@@ -452,7 +454,9 @@ def nodecontroller():
              # log past PWM values
              log.write("{0},{1},{2},{3},".format(pwms_received[0],pwms_received[1],pwms_received[2],pwms_received[3]))
              # Log time stamp
-             log.write("{0},{1}".format(str(ts_cached),'-1'))#str(objval.cpu().detach().numpy())))
+             log.write("{0},{1},".format(str(ts_cached),'-1'))#str(objval.cpu().detach().numpy())))
+             log.write("{0}".format(str(x_prev_cached[-1])))
+             # print("battery is...", x_prev_cached[-1])
              log.write('\n')
 
 
@@ -498,7 +502,7 @@ def publisher(pub, msg):
     print msg.m1, msg.m2, msg.m3, msg.m4
     print "Message :", msg.ID
     print "CF PWM :" , pwms_received, "\n"
-    print "Packet ID: ", packet_id_rec, "\n"
+    # print "Packet ID: ", packet_id_rec, "\n"
     print "Total Radio Loop Freq Hz = ", (totalRuns / (millis() / 1000)) #Frequency control is SENT
     print "On Control Freq Hz = ", (caughtRuns /((millis()-caughtTime)/1000))
 

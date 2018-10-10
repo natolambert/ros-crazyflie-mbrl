@@ -32,7 +32,7 @@
       <!--genericLogTopics: ["state_data", "packetID"]  -->
       genericLogTopics: ["state_data"]
       <!--genericLogTopicFrequencies: [10, 10] -->
-      genericLogTopicFrequencies: [66]  <!-- Online documentation says that these are actually SAMPLING PERIODS, not frequency. Does NOT work below 10 -->
+      genericLogTopicFrequencies: [40]  <!-- Online documentation says that these are actually SAMPLING PERIODS, not frequency. Does NOT work below 10 -->
       <!--genericLogTopicFrequencies: [100]   Online documentation says that these are actually SAMPLING PERIODS, not frequency. Does NOT work below 10-->
       <!-- genericLogTopic_state_data_Variables: ["compactImu.a_xyz", "compactImu.l_xyz", "motorCompact.pwms", "stabilizer.pitch", "stabilizer.roll",  "motorCompact.tick", "stabilizer.yaw"] -->
       <!--genericLogTopic_state_data_Variables: ["compactImu.a_xyz", "compactImu.l_xyz", "motorCompact.pwms", "stabilizer.pitch", "stabilizer.roll", "stabilizer.yaw", "motor.boomtick"]-->
@@ -42,7 +42,8 @@
 
       <!-- genericLogTopic_state_data_Variables: ["compactImu.a_xyz", "compactImu.l_xyz", "motorCompact.pwms", "stabilizer.pitch", "stabilizer.roll", "stabilizer.yaw", "motorCompact.packet_id"] -->
       <!-- genericLogTopic_state_data_Variables: ["compactImu.a_xyz", "compactImu.l_xyz", "stabilizer.pypr", "motorCompact.pwms", "motorCompact.packet_id"] -->
-      genericLogTopic_state_data_Variables: ["compactImu.a_xyz", "compactImu.l_xyz", "stabilizer.pitch","stabilizer.roll","stabilizer.yaw", "motorCompact.pwms", "motorCompact.packet_id"]
+      <!-- genericLogTopic_state_data_Variables: ["compactImu.a_xyz", "compactImu.l_xyz", "stabilizer.pitch","stabilizer.roll","stabilizer.yaw", "motorCompact.pwms", "pm.vbatMV", "motorCompact.packet_id"] -->
+      genericLogTopic_state_data_Variables: ["compactImu.a_xyz", "compactImu.l_xyz", "stabilizer.pitch","stabilizer.roll","stabilizer.yaw", "motorCompact.pwms", "pm.vbatMV"]
 
     </rosparam>
   </node>

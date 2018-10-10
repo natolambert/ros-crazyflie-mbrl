@@ -57,6 +57,9 @@ class CrazyFlie(Dynamics):
 
         self.u_e = np.array([36334.,	36847.,	39682.,	33483.])
 
+        # new CF
+        self.u_e = np.array([31687.1,	37954.7,	33384.8,	36220.11])
+
         self.u_e = self.u_e
 
         # Hover control matrices

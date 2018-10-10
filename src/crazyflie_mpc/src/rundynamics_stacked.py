@@ -190,8 +190,8 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, variance, curren
 
   if iters >1: objective_vals = objective_vals.sum(dim=1)
 
-  mm_idx = torch.argmin(objective_vals)   #switch for real objective function
-  # mm_idx = np.random.randint(0,batch_size)  #switch for random action selection
+  # mm_idx = torch.argmin(objective_vals)   #switch for real objective function
+  mm_idx = np.random.randint(0,batch_size)  #switch for random action selection
 
 
   if graph:
