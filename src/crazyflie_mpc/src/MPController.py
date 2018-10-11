@@ -4,10 +4,10 @@
 import torch
 from torch.nn import MSELoss
 
-from controllers import randController, MPController
-from dynamics_ionocraft import IonoCraft
-from dynamics_crazyflie_linearized import CrazyFlie
-from dynamics import *
+from controllers import  MPController
+# from dynamics_ionocraft import IonoCraft
+# from dynamics_crazyflie_linearized import CrazyFlie
+# from dynamics import *
 import numpy as np
 import time
 import matplotlib.pyplot as plt
@@ -19,7 +19,7 @@ np.set_printoptions(precision=3, suppress=True, linewidth=np.nan, threshold=np.n
 
 
 
-logging = True
+logging = False
 
 
 numStack = 4
@@ -51,10 +51,6 @@ from crazyflie_driver.msg import MotorControl, MotorControlwID, GenericLogData, 
 
 rp = rospkg.RosPack()
 
-
-#model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "greatmodel.pth")
-# model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/current2018-09-07--16-11-12.3--Min error0.035589433410792674||w=500e=360lr=0.001b=20de=3d=_SEP6p=False_best/2018-08-23--14-21-35.9||w=150e=250lr=7e-06b=32d=2018_08_22_cf1_hover_p=True.pth")
-model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/sep12_float/2018-09-15--16-03-14.5--Min error0.017405348309015824--w=500e=60lr=0.0003b=32de=3d=_CONF_p=True.pth")
 
 
 
@@ -227,16 +223,6 @@ def nodecontroller():
   fetching_data = False
   Spinup = True
 
-############################# Get Dynamics Obj #########################
-
-  dt_x = 0.01 # dynamics update
-  dt_u = 0.01 # measurement update
-
-  crazy = CrazyFlie(dt_x, x_noise = 0.000)
-
-############################### Get NN Model ###########################
-  print('Loading offline model')
-  newNN = torch.load(model_path)
 
 
 ################################ Obj Fnc ################################
@@ -244,7 +230,7 @@ def nodecontroller():
 
 ################################ MPC ####################################
   #mpc1 = MPController(newNN, crazy, dt_x, dt_u, origin_minimizer, N=100, T=5, variance = 1000)
-  mpc1 = MPController(newNN, crazy, dt_x, dt_u, N=4000, T=2, variance =6000, numStack = numStack)
+  mpc1 = MPController(PWMequil, N=4000, T=2, variance =6000, numStack = numStack)
   print('...MPC Running')
 
 
@@ -335,7 +321,7 @@ def nodecontroller():
             Spinup = False
 ########################### OPEN LOOP HOP ############################
         if not take_off_flag and not Spinup and not Hop_Flag:
-            mean = mpc1.dynamics_true.u_e
+            mean = PWMequil
 
             #UNCOMMENT FOR OPEN LOOP TAKEOFF
             u[0] = mean[0] * hop_power
@@ -367,7 +353,7 @@ def nodecontroller():
         #
 ########################### OPEN LOOP TAKEOFF ############################
         if ((millis()-start_time) >= hop_delay + spin_time) and not take_off_flag and not Spinup and Hop_Flag:
-            mean = mpc1.dynamics_true.u_e
+            mean = PWMequil
 
             if not np.array_equal(x_prev_cached[:9], x_prev_stacked[:9]):
                 x_prev_stacked[9:] = x_prev_stacked[:9*(numStack-1)]
