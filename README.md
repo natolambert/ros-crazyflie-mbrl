@@ -1,7 +1,7 @@
 crazyflie_ros-pwm-control
 =============
 
-This is a working ROS directory for controlling a Crazyflie with Crazyradio PA. We added a directory to the src called /crazyflie_mpc/ that holds the launch files and scripts needed to run. The scripts that do the most of the work are MPController.py and rundynamics_stacked.py. These create a ROS node that subscribes to state data and sends controls from the model predictive controller running on a Nvidia Titan.
+This is a working ROS directory for controlling a Crazyflie with Crazyradio PA. (forked from https://github.com/whoenig/crazyflie_ros) We added a directory to the src called /crazyflie_mpc/ that holds the launch files and scripts needed to run. The scripts that do the most of the work are MPController.py and rundynamics_stacked.py. These create a ROS node that subscribes to state data and sends controls from the model predictive controller running on a Nvidia Titan.
 
 Usage Instructions
 ------------------
