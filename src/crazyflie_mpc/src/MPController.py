@@ -123,7 +123,7 @@ def callback(data):
     # Checks for collision or dangerous state
     if ((abs(x_prev[3]) >= uncontrollable_state) or
         (abs(x_prev[4]) >= uncontrollable_state) or
-        (abs(x_prev[6])+abs(x_prev[7])  >= 10) or
+        (abs(x_prev[6])+abs(x_prev[7])  >= 14) or
         # ( <= -6) or
         (x_prev[8] <= -6) or
         (abs(x_prev_delta[0]) > 70) or
@@ -134,9 +134,9 @@ def callback(data):
 
 
     # Send the current message too
-    publisher(pub, msg)
+    # publisher(pub, msg)
     if logging: logger(log)
-
+    publisher(pub, msg)
     # Not assigning data anymore
     fetching_data = False
 
@@ -148,12 +148,16 @@ def nodecontroller():
     logging = False
 
     # important varaible for how many previous states to feed to the network
-    numStack = 4
+    numStack = 3
     #set to 3 for 50Hz (as per Roberto)
+    global log_battery
+    log_battery = True
+    global vbat
+    vbat = 1
 
     # equilibrium values from PID control
     # PWMequil = np.array([36334., 36847.,	39682.,	33483.])
-    PWMequil = np.array([31687.1,	37954.7,	33384.8,	36220.11]) # new quad
+    PWMequil = np.array([31687.1+1000.,	37954.7,	33384.8,	36220.11+1000.]) # new quad
 
     # store objective here later
     OBJ = np.array([0])
@@ -223,10 +227,10 @@ def nodecontroller():
     sent = False
 
     # POWER ADJUSTMENTS
-    takeoff_power = 1.22
+    takeoff_power = 1.2
     equilAdjust = takeoff_power-1
     takeoff_adjust = 0.3
-    takeoff_adjust_step = .013 #007
+    takeoff_adjust_step = 3*.0105 #007
     equil_step = .95
     hop_power = 0
     takeoff_time = 900
@@ -240,17 +244,18 @@ def nodecontroller():
     ############################## Logging and ROS ##########################
     global log
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    log_folder = "/home/hiro/crazyflie_ros/src/crazyflie_mpc/src/_flightlogs/_newquad1/packet_test/"
+    log_folder = "/home/hiro/crazyflie_ros/src/crazyflie_mpc/src/_flightlogs/_newquad1/new_samp/c50_samp400_roll1/"
     log = open(log_folder+'flight_log-'+timestr+'.csv',"w+")
 
     global pub
     pub = rospy.Publisher('/cmd_vel', MotorControlwID, queue_size = 1)
-    pubCont = rospy.Publisher('/cmd_hover', Hover, queue_size = 1)
+    # pubCont = rospy.Publisher('/cmd_hover', Hover, queue_size = 1)
 
     rospy.init_node('MPController', anonymous=True)
     rospy.Subscriber('/state_data', GenericLogData, callback)
 
-    rate = rospy.Rate(150) # frequency of operation in hz
+    rate = rospy.Rate(50) # frequency of operation in hz
+    rate_fast = rospy.Rate(1000)
 
     # just update the message values to send a new control
     global msg
@@ -277,15 +282,19 @@ def nodecontroller():
     while not rospy.is_shutdown():
 
         # update state variables used for control
-        if not fetching_data:
-            x_prev_delta = x_prev - x_prev_cached
-            x_prev_cached = x_prev #change from LAST state
-            ts_cached = int(ts)
-            if Spinup:
-                new_data = True
-            else:
-                new_data = not np.array_equal(x_prev_cached[:9], x_prev_stacked[:9])
-                # new_data = not np.array_equal(x_prev_cached[3:6], x_prev_stacked[3:6])
+        # if not fetching_data:
+        x_prev_delta = x_prev - x_prev_cached
+        x_prev_cached = x_prev #change from LAST state
+        ts_cached = int(ts)
+        vbat = x_prev_cached[9]
+        if Spinup:
+            new_data = True
+        elif not np.all(pwms_received):
+            new_data = True
+        else:
+            new_data = not np.array_equal(x_prev_cached[:9], x_prev_stacked[:9])
+            # new_data = not np.array_equal(pwms_received, u_prev_stacked[:4])
+            # new_data = not np.array_equal(x_prev_cached[3:6], x_prev_stacked[3:6])
 
 
         ############################ EMERGENCY STOP  ###########################
@@ -307,7 +316,7 @@ def nodecontroller():
             if stopFlag:
                 log.close()
                 print "Final::: On Control Freq Hz = ", (caughtRuns /((millis()-caughtTime)/1000))
-                print "Fianl::: Packet Rx Freq Hz = ", (totalReceived/((millis())/1000))
+                print "Final::: Packet Rx Freq Hz = ", (totalReceived/((millis())/1000))
 
                 ############################ PLOT EACH RUN ####################################
                 if plot_each:
@@ -350,35 +359,39 @@ def nodecontroller():
 
             # only bother computing when there's new data
             if new_data:
-                x_prev_stacked[9:] = x_prev_stacked[:9*(numStack-1)]
-                x_prev_stacked[:9] = x_prev_cached[:9]
+                if not pwms_received == u_prev_stacked[4:]:
+                    x_prev_stacked[9:] = x_prev_stacked[:9*(numStack-1)]
+                    x_prev_stacked[:9] = x_prev_cached[:9]
 
-                # Stacks inputs
-                u_prev_stacked[4:] = u_prev_stacked[:4*(numStack-1)]
-                u_prev_stacked[:4] = pwms_received
+                    # Stacks inputs. holds past input at 30000 if pwm received are still 0
+                    if not np.all(pwms_received):
+                         u_prev_stacked = u_prev_stacked
+                    else:
+                        u_prev_stacked[4:] = u_prev_stacked[:4*(numStack-1)]
+                        u_prev_stacked[:4] = pwms_received
 
-                takeoff_adjust += takeoff_adjust_step
-                pow = min(takeoff_power,takeoff_adjust)
-                # print(pow)
-                u, objval, pred_state = mpc1.update(x_prev_stacked,u_prev_stacked,pow)   # UPDATE SHOULD RETURN PWMs
-                u = u[:4]
+                    takeoff_adjust += takeoff_adjust_step
+                    pow = min(takeoff_power,takeoff_adjust)
+                    # print(pow)
+                    u, objval, pred_state = mpc1.update(x_prev_stacked, u_prev_stacked, pow, vbat)   # UPDATE SHOULD RETURN PWMs
+                    u = u[:4]
 
-                msg.m1 = min(max(u[0], 0), 65535)
-                msg.m2 = min(max(u[1], 0), 65535)
-                msg.m3 = min(max(u[2], 0), 65535)
-                msg.m4 = min(max(u[3], 0), 65535)
-                msg.ID = packet_id
+                    msg.m1 = min(max(u[0], 0), 65535)
+                    msg.m2 = min(max(u[1], 0), 65535)
+                    msg.m3 = min(max(u[2], 0), 65535)
+                    msg.m4 = min(max(u[3], 0), 65535)
+                    msg.ID = packet_id
 
-                packet_id += 1
-                takecount += 1
+                    packet_id += 1
+                    takecount += 1
 
-                print('OPEN LOOP TAKEOFF (RUN)')
-                if (millis()-start_time) >= (takeoff_time + spin_time + hop_delay):
-                    take_off_flag = True
+                    print('OPEN LOOP TAKEOFF (RUN)')
+                    if (millis()-start_time) >= (takeoff_time + spin_time + hop_delay):
+                        take_off_flag = True
 
-                publisher(pub, msg)
-                # if logging: logger(log)
-                sent = True
+                    publisher(pub, msg)
+                    # if logging: logger(log)
+                    sent = True
 
 
 
@@ -390,35 +403,39 @@ def nodecontroller():
 
             # only bother computing when there's new data
             if new_data:
-                x_prev_stacked[9:] = x_prev_stacked[:9*(numStack-1)]
-                x_prev_stacked[:9] = x_prev_cached[:9]
+                if not pwms_received == u_prev_stacked[4:]:
+                    x_prev_stacked[9:] = x_prev_stacked[:9*(numStack-1)]
+                    x_prev_stacked[:9] = x_prev_cached[:9]
 
-                # Stacks inputs
-                u_prev_stacked[4:] = u_prev_stacked[:4*(numStack-1)]
-                u_prev_stacked[:4] = pwms_received
+                    # Stacks inputs. holds past input at 30000 if pwm received are still 0
+                    if not np.all(pwms_received):
+                         u_prev_stacked = u_prev_stacked
+                    else:
+                        u_prev_stacked[4:] = u_prev_stacked[:4*(numStack-1)]
+                        u_prev_stacked[:4] = pwms_received
 
-                equilAdjust = equil_step*equilAdjust
-                u, objval, pred_state = mpc1.update(x_prev_stacked,u_prev_stacked,1.05)   # UPDATE SHOULD RETURN PWMs
-                u = u[:4]
-                OBJ[0] = objval.cpu().detach().numpy()
+                    equilAdjust = equil_step*equilAdjust
+                    u, objval, pred_state = mpc1.update(x_prev_stacked, u_prev_stacked, 1.05, vbat)   # UPDATE SHOULD RETURN PWMs
+                    u = u[:4]
+                    OBJ[0] = objval.cpu().detach().numpy()
 
-                # prep packet
-                if caughtTime == 0:
-                    caughtTime = millis()
-                    caughtFlag = True
+                    # prep packet
+                    if caughtTime == 0:
+                        caughtTime = millis()
+                        caughtFlag = True
 
-                msg.m1 = min(max(u[0], 0), 65535)
-                msg.m2 = min(max(u[1], 0), 65535)
-                msg.m3 = min(max(u[2], 0), 65535)
-                msg.m4 = min(max(u[3], 0), 65535)
-                msg.ID = packet_id
-                publisher(pub, msg)
+                    msg.m1 = min(max(u[0], 0), 65535)
+                    msg.m2 = min(max(u[1], 0), 65535)
+                    msg.m3 = min(max(u[2], 0), 65535)
+                    msg.m4 = min(max(u[3], 0), 65535)
+                    msg.ID = packet_id
+                    publisher(pub, msg)
 
-                packet_id += 1 # update packet ID on each update of control
-                caughtRuns += 1
-                # if logging: logger(log)
+                    packet_id += 1 # update packet ID on each update of control
+                    caughtRuns += 1
+                    # if logging: logger(log)
 
-                sent = True
+                    sent = True
 
         ##################### RADIO SPINUP #######################################
         # spams 0s when getting the radio up to speed
@@ -428,14 +445,17 @@ def nodecontroller():
             msg.m3 = 0
             msg.m4 = 0
             msg.ID = 0
-            pub.publish(msg)
-            sent = True
         else:
             Spinup = False
 
+        # whenever we update the control, sent is set to True, so the rosrate is held
+        # otherwise, it'll cycle through this loop VERY fast waiting for new data
+        # publisher(pub, msg)
         if sent:
             sent = False
             rate.sleep()
+        else:
+            rate_fast.sleep()
 
 
 def logger(log):
@@ -458,7 +478,7 @@ def publisher(pub, msg):
     # print "CF PWM :" , pwms_received, "\n"
     # print "Packet ID: ", packet_id_rec, "\n"
     # print "Total Radio Loop Freq Hz = ", (totalRuns / (millis() / 1000)) #Frequency control is SENT
-    if caughtFlag and totalReceived % 350 == 0:
+    if caughtFlag and totalReceived % 100 == 0:
         print "On Control Freq Hz = ", (caughtRuns /((millis()-caughtTime)/1000))
         print "Packet Rx Freq Hz = ", (totalReceived/((millis())/1000))
 

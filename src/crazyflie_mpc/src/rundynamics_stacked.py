@@ -18,19 +18,26 @@ device = torch.device('cuda')
 torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
 #NORMS FILE
-norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/vid_models/2018-09-15--16-03-14.5--Min error0.017405348309015824--w=500e=60lr=0.0003b=32de=3d=_CONF_p=True--normparams.pkl")
+# norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/vid_models/2018-09-15--16-03-14.5--Min error0.017405348309015824--w=500e=60lr=0.0003b=32de=3d=_CONF_p=True--normparams.pkl")
+norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/oct25/2018-10-25--12-40-22.9--Min error-19.711113d=_50Hz_roll0_stack3_--normparams.pkl")
+
 #MODEL FILE
-model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/vid_models/2018-09-15--16-03-14.5--Min error0.017405348309015824--w=500e=60lr=0.0003b=32de=3d=_CONF_p=True.pth")
+# model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/vid_models/2018-09-15--16-03-14.5--Min error0.017405348309015824--w=500e=60lr=0.0003b=32de=3d=_CONF_p=True.pth")
+model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/oct25/2018-10-25--12-40-22.9--Min error-19.711113d=_50Hz_roll0_stack3_.pth")
 
 
 fileObj = open(norms_path, 'r')
 scalerX, scalerU, scalerdX = pickle.load(fileObj)
 
 # for minmax scaler
-Umin = torch.Tensor(scalerU.data_min_)
+Umin = torch.Tensor(scalerU.data_min_[:-1])
 # Umax = torch.Tensor(scalerU.max_)
-Uscale = torch.Tensor(scalerU.scale_)
+Uscale = torch.Tensor(scalerU.scale_[:-1])
 
+# for minmax scaler
+Vmin = torch.Tensor(scalerU.data_min_[-1:])
+# Umax = torch.Tensor(scalerU.max_)
+Vscale = torch.Tensor(scalerU.scale_[-1:])
 
 ###############
 # For MinMaxScaler
@@ -46,12 +53,13 @@ model.eval()
 model = model.cuda()
 steps = 256
 
-def run_stack(batch_size, iters, action_len, mean, prev_action, variance, current_state, state_idx, numStack, meanAdjust):
+def run_stack(batch_size, iters, action_len, mean, prev_action, vbat, variance, current_state, state_idx, numStack, meanAdjust):
   if printflag: print('\n')
   #model = model.cuda()
   #print("RECEIVED : ", current_state, " IDX: ", state_idx)
   prev_action = torch.tensor(prev_action).type(torch.cuda.FloatTensor)
 
+  vbat = torch.tensor(vbat)
   mean = meanAdjust * mean
   # variance = variance*(1+4*(1.25-meanAdjust))
   # print(variance)
@@ -65,6 +73,9 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, variance, curren
   actions2.mul_(steps)
   actions3.mul_(steps)
   actions4.mul_(steps)
+
+  # if battery, concatenate battery voltage
+
 
   #CHANGE TO NUMSTACK
   actions = torch.cat((actions1, actions2, actions3, actions4), 2)
@@ -90,10 +101,16 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, variance, curren
   normX = X.sub(Xmin)
   normX.div_(Xscale)
 
+
   #Usage for minmaxscaler
   normU = actions.sub(Umin)
   normU.mul_(Uscale)
   normU.sub_(1)     # sub one because scaled (-1,1)
+
+  # vbat normalization
+  vbat = vbat.sub(Vmin)
+  vbat.mul_(Vscale)
+  vbat.sub_(1)
 
   idx = torch.tensor(state_idx)
   results = torch.empty(batch_size, iters, len(state_idx))
@@ -113,6 +130,9 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, variance, curren
     #     prev_action.mul_(Uscale[:4])
     #     prev_action.sub_(1)
     #     batch[:,4:] = prev_action
+
+    batch = torch.cat((batch, vbat.expand(batch_size,1)),1)
+
 
     input   = torch.Tensor(torch.cat((normX, batch), 1))
     states  = model(input)              # For stacked model input, input should be of form (1, numStack*(9+4))
@@ -225,8 +245,5 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, variance, curren
 
   # for dropped packets
   next_state = results[mm_idx,0,:]
-
-
-
 
   return control, objective_vals[mm_idx], next_state

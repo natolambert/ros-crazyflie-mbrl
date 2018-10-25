@@ -22,7 +22,6 @@ class MPController():
         # time step to be used inthe future when control update rate != dynamics update rate
         self.numStack = numStack
 
-
         # time variance of control variable intialization
         self.i = 0
         self.control = equil
@@ -36,13 +35,13 @@ class MPController():
         self.zeros = np.zeros(12)
 
 
-    def update(self, current_state, last_action,meanAdjust):
+    def update(self, current_state, last_action, meanAdjust, vbat = 0):
         # function that returns desired control output
 
         # Simulate a bunch of random actions and then need a way to evaluate reward
         N = self.N
         T = self.time_horiz
 
-        control, objectives, pred_state = rd_stack.run_stack(N,T,4, self.control, last_action, self.var, current_state, [0,1,2,3,4,5,6,7,8],self.numStack, meanAdjust)
+        control, objectives, pred_state = rd_stack.run_stack(N,T,4, self.control, last_action, vbat, self.var, current_state, [0,1,2,3,4,5,6,7,8],self.numStack, meanAdjust)
 
         return control, objectives, pred_state
