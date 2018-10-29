@@ -25,7 +25,7 @@ Crazyradio::Crazyradio(
     , USBDevice(0x1915, 0x7777)
     , m_channel(0)
     , m_address(0)
-    , m_datarate(Datarate_250KPS)
+    , m_datarate(Datarate_2MPS) // Was Datarate_250KPS
     , m_ackEnable(true)
 {
     open(devid);
@@ -34,9 +34,9 @@ Crazyradio::Crazyradio(
     setContCarrier(false);
     setAddress(0xE7E7E7E7E7);
     setPower(Power_0DBM);
-    setArc(10);    // was 3
+    setArc(1);    // was 3
     setArdBytes(8);  // was 32
-    setAckEnable(true);
+    setAckEnable(false);
 }
 
 Crazyradio::~Crazyradio()

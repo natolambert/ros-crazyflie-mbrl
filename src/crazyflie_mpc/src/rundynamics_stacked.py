@@ -19,11 +19,11 @@ torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
 #NORMS FILE
 # norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/vid_models/2018-09-15--16-03-14.5--Min error0.017405348309015824--w=500e=60lr=0.0003b=32de=3d=_CONF_p=True--normparams.pkl")
-norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/oct25/2018-10-25--12-40-22.9--Min error-19.711113d=_50Hz_roll0_stack3_--normparams.pkl")
+norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/oct25_26/2018-10-25--15-38-36.6--Min error-27.682497d=_50Hz_roll1_stack3_--normparams.pkl")
 
 #MODEL FILE
 # model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/vid_models/2018-09-15--16-03-14.5--Min error0.017405348309015824--w=500e=60lr=0.0003b=32de=3d=_CONF_p=True.pth")
-model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/oct25/2018-10-25--12-40-22.9--Min error-19.711113d=_50Hz_roll0_stack3_.pth")
+model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/oct25_26/2018-10-25--15-38-36.6--Min error-27.682497d=_50Hz_roll1_stack3_.pth")
 
 
 fileObj = open(norms_path, 'r')
@@ -180,17 +180,17 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, vbat, variance, 
   # objective_vals.add_((data_eval[:,:,2].mul_(data_eval[:,:,2])).mul_(.00001))
 
   # # Minimize values of euler angles, trimmed, squared
-  objective_vals.add_(((data_eval[:,:,3].sub_(2)).mul_(data_eval[:,:,3])).mul_(10))   #Pitch DD trim 5
-  objective_vals.add_(((data_eval[:,:,4].sub_(2)).mul_(data_eval[:,:,4])).mul_(2))   #Roll DD trime -3
+  objective_vals.add_(((data_eval[:,:,3].sub_(-3)).mul_(data_eval[:,:,3])).mul_(2))   #Pitch DD trim 5
+  objective_vals.add_(((data_eval[:,:,4].sub_(0)).mul_(data_eval[:,:,4])).mul_(4))   #Roll DD trime -3
   # objective_vals.add_((data_eval[:,:,5].mul_(data_eval[:,:,5])).mul_(2))
 
   # euler angle rate regularization (add penalty to faster rate changes)
   # objective_vals[:,1:].add_((data_eval[:,1:,3].sub_(data_eval[:,:-1,3])).mul_((data_eval[:,1:,3].sub_(data_eval[:,:-1,3]))).mul_(2))
   # objective_vals[:,1:].add_((data_eval[:,1:,4].sub_(data_eval[:,:-1,4])).mul_((data_eval[:,1:,4].sub_(data_eval[:,:-1,4]))).mul_(2))
   # objective_vals[:,1:].add_((data_eval[:,1:,5].sub_(data_eval[:,:-1,5])).mul_((data_eval[:,1:,5].sub_(data_eval[:,:-1,5]))).mul_(.2))
-  objective_vals[:,1].add_((data_eval[:,1,3].sub_(data_eval[:,0,3])).mul_((data_eval[:,1,3])).mul_(10780))   #Pitch rate
-  objective_vals[:,1].add_((data_eval[:,1,4].sub_(data_eval[:,0,4])).mul_((data_eval[:,1,4])).mul_(8300))   #Roll rate
-  objective_vals[:,1].add_((data_eval[:,1,5].sub_(data_eval[:,0,5])).mul_((data_eval[:,1,5])).mul_(300))    #Yaw rate
+  objective_vals[:,1].add_((data_eval[:,1,3].sub_(data_eval[:,0,3])).mul_((data_eval[:,1,3])).mul_(4500))   #Pitch rate
+  objective_vals[:,1].add_((data_eval[:,1,4].sub_(data_eval[:,0,4])).mul_((data_eval[:,1,4])).mul_(6000))   #Roll rate
+  objective_vals[:,1].add_((data_eval[:,1,5].sub_(data_eval[:,0,5])).mul_((data_eval[:,1,5])).mul_(20))    #Yaw rate
 
   # Minimize values of linear accelerations
   # objective_vals.add_((data_eval[:,:,6].mul_(data_eval[:,:,6])).mul_(2))
@@ -245,5 +245,5 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, vbat, variance, 
 
   # for dropped packets
   next_state = results[mm_idx,0,:]
-
+  # print(control)
   return control, objective_vals[mm_idx], next_state
