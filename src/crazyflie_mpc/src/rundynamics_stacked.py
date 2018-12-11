@@ -11,33 +11,50 @@ import matplotlib.pyplot as plt
 graph = False
 printflag = False
 dX = True
+vbat_f = False
+mf_flag = True
 
 rp = rospkg.RosPack()
 
 device = torch.device('cuda')
-torch.set_default_tensor_type('torch.cuda.FloatTensor')
+if not mf_flag:
+    torch.set_default_tensor_type('torch.cuda.FloatTensor')
+else:
+    torch.set_default_tensor_type('torch.FloatTensor')
 
 #NORMS FILE
-# norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/vid_models/2018-09-15--16-03-14.5--Min error0.017405348309015824--w=500e=60lr=0.0003b=32de=3d=_CONF_p=True--normparams.pkl")
-norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/oct25_26/2018-10-25--15-38-36.6--Min error-27.682497d=_50Hz_roll1_stack3_--normparams.pkl")
+# norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/oct29_oct31/2018-10-31--06-58-45.2--Min error-27.99523d=_50Hz_roll3_stack3_--normparams.pkl")
+norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/publ2/25hz/2018-11-14--21-06-47.1_25hz_roll15_stack3_--normparams.pkl")
+# norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/publ2/50hz/2018-11-15--11-07-09.2_50hz_roll12_stack3_--normparams.pkl")
+# norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/publ/roll5/2018-11-14--11-24-01.7_50hz_roll5_stack3_--normparams.pkl")
+# norms_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/nov9_/2018-11-09--14-29-07.3_100Hz_roll3_stack4_--normparams.pkl")
 
 #MODEL FILE
-# model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/vid_models/2018-09-15--16-03-14.5--Min error0.017405348309015824--w=500e=60lr=0.0003b=32de=3d=_CONF_p=True.pth")
-model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/oct25_26/2018-10-25--15-38-36.6--Min error-27.682497d=_50Hz_roll1_stack3_.pth")
+# model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/oct29_oct31/2018-10-31--06-58-45.2--Min error-27.99523d=_50Hz_roll3_stack3_.pth")
+model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/publ2/25hz/2018-11-14--21-06-47.1_25hz_roll15_stack3_.pth")
+# model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/publ2/50hz/2018-11-15--11-07-09.2_50hz_roll12_stack3_.pth")
+# model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/publ/roll5/2018-11-14--11-24-01.7_50hz_roll5_stack3_.pth")
+# model_path = os.path.join(rp.get_path("crazyflie_mpc"), "src", "_models/newsys/nov9_/2018-11-09--14-29-07.3_100Hz_roll3_stack4_.pth")
 
 
 fileObj = open(norms_path, 'r')
 scalerX, scalerU, scalerdX = pickle.load(fileObj)
 
-# for minmax scaler
-Umin = torch.Tensor(scalerU.data_min_[:-1])
-# Umax = torch.Tensor(scalerU.max_)
-Uscale = torch.Tensor(scalerU.scale_[:-1])
+# for minmax scaler with battery
+if vbat_f:
+    Umin = torch.Tensor(scalerU.data_min_[:-1])
+    # Umax = torch.Tensor(scalerU.max_)
+    Uscale = torch.Tensor(scalerU.scale_[:-1])
+else:
+    Umin = torch.Tensor(scalerU.data_min_)
+    # Umax = torch.Tensor(scalerU.max_)
+    Uscale = torch.Tensor(scalerU.scale_)
 
 # for minmax scaler
-Vmin = torch.Tensor(scalerU.data_min_[-1:])
-# Umax = torch.Tensor(scalerU.max_)
-Vscale = torch.Tensor(scalerU.scale_[-1:])
+if vbat_f:
+    Vmin = torch.Tensor(scalerU.data_min_[-1:])
+    # Umax = torch.Tensor(scalerU.max_)
+    Vscale = torch.Tensor(scalerU.scale_[-1:])
 
 ###############
 # For MinMaxScaler
@@ -59,7 +76,7 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, vbat, variance, 
   #print("RECEIVED : ", current_state, " IDX: ", state_idx)
   prev_action = torch.tensor(prev_action).type(torch.cuda.FloatTensor)
 
-  vbat = torch.tensor(vbat)
+  if vbat_f: vbat = torch.tensor(vbat)
   mean = meanAdjust * mean
   # variance = variance*(1+4*(1.25-meanAdjust))
   # print(variance)
@@ -108,9 +125,10 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, vbat, variance, 
   normU.sub_(1)     # sub one because scaled (-1,1)
 
   # vbat normalization
-  vbat = vbat.sub(Vmin)
-  vbat.mul_(Vscale)
-  vbat.sub_(1)
+  if vbat_f:
+      vbat = vbat.sub(Vmin)
+      vbat.mul_(Vscale)
+      vbat.sub_(1)
 
   idx = torch.tensor(state_idx)
   results = torch.empty(batch_size, iters, len(state_idx))
@@ -131,7 +149,8 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, vbat, variance, 
     #     prev_action.sub_(1)
     #     batch[:,4:] = prev_action
 
-    batch = torch.cat((batch, vbat.expand(batch_size,1)),1)
+    if vbat_f:
+        batch = torch.cat((batch, vbat.expand(batch_size,1)),1)
 
 
     input   = torch.Tensor(torch.cat((normX, batch), 1))
@@ -180,22 +199,22 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, vbat, variance, 
   # objective_vals.add_((data_eval[:,:,2].mul_(data_eval[:,:,2])).mul_(.00001))
 
   # # Minimize values of euler angles, trimmed, squared
-  objective_vals.add_(((data_eval[:,:,3].sub_(-3)).mul_(data_eval[:,:,3])).mul_(2))   #Pitch DD trim 5
-  objective_vals.add_(((data_eval[:,:,4].sub_(0)).mul_(data_eval[:,:,4])).mul_(4))   #Roll DD trime -3
+  objective_vals.add_(((data_eval[:,:,3].sub_(-2.0)).mul_(data_eval[:,:,3])).mul_(.005))   #Pitch DD trim 5
+  objective_vals.add_(((data_eval[:,:,4].sub_(-0)).mul_(data_eval[:,:,4])).mul_(.005))   #Roll DD trime -3
   # objective_vals.add_((data_eval[:,:,5].mul_(data_eval[:,:,5])).mul_(2))
 
   # euler angle rate regularization (add penalty to faster rate changes)
   # objective_vals[:,1:].add_((data_eval[:,1:,3].sub_(data_eval[:,:-1,3])).mul_((data_eval[:,1:,3].sub_(data_eval[:,:-1,3]))).mul_(2))
   # objective_vals[:,1:].add_((data_eval[:,1:,4].sub_(data_eval[:,:-1,4])).mul_((data_eval[:,1:,4].sub_(data_eval[:,:-1,4]))).mul_(2))
   # objective_vals[:,1:].add_((data_eval[:,1:,5].sub_(data_eval[:,:-1,5])).mul_((data_eval[:,1:,5].sub_(data_eval[:,:-1,5]))).mul_(.2))
-  objective_vals[:,1].add_((data_eval[:,1,3].sub_(data_eval[:,0,3])).mul_((data_eval[:,1,3])).mul_(4500))   #Pitch rate
-  objective_vals[:,1].add_((data_eval[:,1,4].sub_(data_eval[:,0,4])).mul_((data_eval[:,1,4])).mul_(6000))   #Roll rate
-  objective_vals[:,1].add_((data_eval[:,1,5].sub_(data_eval[:,0,5])).mul_((data_eval[:,1,5])).mul_(20))    #Yaw rate
+  objective_vals[:,1].add_((data_eval[:,1,3].sub_(data_eval[:,0,3])).mul_((data_eval[:,1,3])).mul_(1.7*80000))   #Pitch rate
+  objective_vals[:,1].add_((data_eval[:,1,4].sub_(data_eval[:,0,4])).mul_((data_eval[:,1,4])).mul_(1.7*80000))   #Roll rate
+  objective_vals[:,1].add_((data_eval[:,1,5].sub_(data_eval[:,0,5])).mul_((data_eval[:,1,5])).mul_(50000))    #Yaw rate
 
   # Minimize values of linear accelerations
   # objective_vals.add_((data_eval[:,:,6].mul_(data_eval[:,:,6])).mul_(2))
   # objective_vals.add_((data_eval[:,:,7].mul_(data_eval[:,:,7])).mul_(2))
-  # objective_vals.add_(((data_eval[:,:,8].sub_(11)).mul_(data_eval[:,:,8])).mul_(20))
+  # objective_vals.add_(((data_eval[:,:,8].sub_(10)).mul_(data_eval[:,:,8])).mul_(2))
 
 
   # slope = (data_eval[:,:,3:6].squeeze()).sub(X[:,3:6])
@@ -210,8 +229,8 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, vbat, variance, 
 
   if iters >1: objective_vals = objective_vals.sum(dim=1)
 
-  # mm_idx = torch.argmin(objective_vals)   #switch for real objective function
-  mm_idx = np.random.randint(0,batch_size)  #switch for random action selection
+  mm_idx = torch.argmin(objective_vals)   #switch for real objective function
+  # mm_idx = np.random.randint(0,batch_size)  #switch for random action selection
 
 
   if graph:

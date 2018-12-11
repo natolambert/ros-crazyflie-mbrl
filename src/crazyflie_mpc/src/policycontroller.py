@@ -5,7 +5,6 @@ import torch
 from torch.nn import MSELoss
 
 # controller object
-from controllers import  MPController
 
 # misc packages
 import numpy as np
@@ -164,11 +163,9 @@ def nodecontroller():
     vbat = 1000
 
     # equilibrium values from PID control
-    # PWMequil = np.array([36334., 36847.,	39682.,	33483.])
-    # PWMequil = np.array([31687.1,	37954.7+100.,	33384.8+1500.,	36220.11])
+
     # PWMequil = np.array([32027.4328358209+450.,	34252.6567164179,	34042.0597014925,	34071.0447761194-500.]) # new quad updated: 32027,4328358209	34252,6567164179	34042,0597014925	34071,0447761194
     PWMequil = np.array([34052.36,	44589.27-1500.,	36313.09+1000.,	41731.45-1000.]) # new quad updated: 32027,4328358209	34252,6567164179	34042,0597014925	34071,0447761194
-    # new quad 2 34052.36	44589.27	36313.09	41731.45
 
     # store objective here later
     global OBJ
@@ -271,25 +268,16 @@ def nodecontroller():
 
     if mf_flag:
         # Model free testing
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
+        torch.set_default_tensor_type('torch.FloatTensor')
         data_mf = joblib.load('params.pkl')
         policy_mf = data_mf['policy']
         # env_mf = data['env']
 
-        # def get_current_observation():
-        #     return env.reset()
-
-        # while True:
-        #     o = get_current_observation() # Get current observation
-        #     a, _ = policy.get_action(o)
-        #     rescale = lambda v: (v+1)*(50000-30000.0)/2 + 30000
-        #     rescaled_a = np.fromiter((rescale(xi) for xi in a), a.dtype, count=len(a))
-        #     print(rescaled_a[:4])
 
     ############################## Logging and ROS ##########################
     global log
     timestr = time.strftime("%Y%m%d-%H%M%S")
-    log_folder = "/home/hiro/crazyflie_ros/src/crazyflie_mpc/src/_flightlogs/_newquad1/publ_data3/model25_c100/"
+    log_folder = "/home/hiro/crazyflie_ros/src/crazyflie_mpc/src/_flightlogs/_newquad1/mf_test/"
     log = open(log_folder+'flight_log-'+timestr+'.csv',"w+")
 
     global pub
@@ -313,11 +301,7 @@ def nodecontroller():
     global msg
     msg = MotorControlwID()
 
-
-    ################################ MPC ####################################
-    #mpc1 = MPController(newNN, crazy, dt_x, dt_u, origin_minimizer, N=100, T=5, variance = 1000)
-    mpc1 = MPController(PWMequil, N=8000, T=7, variance =6500, numStack = numStack)
-    print('...MPC Running')
+    print('...Policy Running')
 
 
 
@@ -326,8 +310,6 @@ def nodecontroller():
     x_prev_stacked = np.zeros(numStack*9)
     u_prev_stacked = np.ones(numStack*4)*30000. # initial U stacked is defined here
 
-    for i in range(5):
-        _, _, _ = mpc1.update(x_prev_stacked, u_prev_stacked, 1., 4000.)
 
     # start logging right as we start
     logging = True
@@ -421,7 +403,10 @@ def nodecontroller():
             msg.m4 = 0
             msg.ID = 0
             # print("pre blank contr: ", millis()-start_time)
-            _, _, _ = mpc1.update(x_prev_stacked, u_prev_stacked, 0., 3800.)
+            o = np.concatenate([x_prev_stacked, u_prev_stacked[:8]])
+            a, _ = policy_mf.get_action(o)
+            rescale = lambda v: (v+1)*(50000-30000.0)/2 + 30000
+            rescaled_a = np.fromiter((rescale(xi) for xi in a), a.dtype, count=len(a))
             publisher(pub, msg)
             # print("post blank contr: ", millis()-start_time)
             sent = True
@@ -464,8 +449,7 @@ def nodecontroller():
                     take_off_flag = True
                     # print("END TAKEOFF")
 
-                u, objval, pred_state = mpc1.update(x_prev_stacked, u_prev_stacked, pow, vbat, varadj = .025)   # UPDATE SHOULD RETURN PWMs
-                u = u[:4]
+                u = pow*PWMequil
                 #  Objective values are -1 before actual flight
                 OBJ[0] = -1 #objval.cpu().detach().numpy()
 
@@ -512,40 +496,6 @@ def nodecontroller():
 
                 sent = True
 
-        # elif ((millis()-start_time) >= (takeoff_time + spin_time + hop_delay)) and take_off_flag and not sent:
-        elif take_off_flag and not sent:
-            # print("CONTROLLED FLIGHT")
-            # only bother computing when there's new data
-            if new_data:
-                # if not pwms_received == u_prev_stacked[4:]:
-                x_prev_stacked[9:] = x_prev_stacked[:9*(numStack-1)]
-                x_prev_stacked[:9] = x_prev_cached[:9]
-
-                u_prev_stacked[4:] = u_prev_stacked[:4*(numStack-1)]
-                u_prev_stacked[:4] = pwms_received
-
-                equilAdjust = equil_step*equilAdjust
-                u, objval, pred_state = mpc1.update(x_prev_stacked, u_prev_stacked, flight_pow_adjust, vbat)   # UPDATE SHOULD RETURN PWMs
-                u = u[:4]
-                OBJ[0] = objval.cpu().detach().numpy()
-
-                # prep packet
-                if caughtTime == 0:
-                    caughtTime = millis()
-                    caughtFlag = True
-
-                msg.m1 = min(max(u[0], 0), 65535)
-                msg.m2 = min(max(u[1], 0), 65535)
-                msg.m3 = min(max(u[2], 0), 65535)
-                msg.m4 = min(max(u[3], 0), 65535)
-                msg.ID = packet_id
-                publisher(pub, msg)
-
-                packet_id += 1 # update packet ID on each update of control
-                caughtRuns += 1
-                # if logging: logger(log)
-
-                sent = True
 
 
 
