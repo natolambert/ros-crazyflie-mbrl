@@ -216,6 +216,12 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, vbat, variance, 
   # objective_vals.add_((data_eval[:,:,7].mul_(data_eval[:,:,7])).mul_(2))
   # objective_vals.add_(((data_eval[:,:,8].sub_(10)).mul_(data_eval[:,:,8])).mul_(2))
 
+  ### Minimize vx, vz, vy
+  ### Assume vx in idx 6, vy in idx 7, vz in idx 8 (Subject to change)
+  objective_vals.add_((data_eval[:,:,6].mul_(data_eval[:,:,6])).mul_(1)) # Minimize vx
+  objective_vals.add_((data_eval[:,:,7].mul_(data_eval[:,:,7])).mul_(1)) # Minimize vy
+  objective_vals.add_(((data_eval[:,:,7].mul_(data_eval[:,:,7])).mul_(1)).sub_(0.25)) # Minimize vz^2 - 0.25 for 0.5m goal
+
 
   # slope = (data_eval[:,:,3:6].squeeze()).sub(X[:,3:6])
   # # # T=1 Slope code
