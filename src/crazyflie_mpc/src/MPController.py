@@ -110,6 +110,8 @@ def callback(data):
     x_prev[8] = imu[0][5] #l_z
     x_prev[9] = b[0]      # battery
 
+    ### NEW x vars should go here
+
     ts[0] = str(t)
     pwms_received[0] = pwms[0][0]
     pwms_received[1] = pwms[0][1]
@@ -323,7 +325,7 @@ def nodecontroller():
 
     # stacked states to pass into network
     pred_state = torch.zeros(9)
-    x_prev_stacked = np.zeros(numStack*9)
+    x_prev_stacked = np.zeros(numStack*12)
     u_prev_stacked = np.ones(numStack*4)*30000. # initial U stacked is defined here
 
     for i in range(5):
@@ -446,8 +448,8 @@ def nodecontroller():
             # only bother computing when there's new data
             if new_data:
                 # if not pwms_received == u_prev_stacked[4:]:
-                x_prev_stacked[9:] = x_prev_stacked[:9*(numStack-1)]
-                x_prev_stacked[:9] = x_prev_cached[:9]
+                x_prev_stacked[12:] = x_prev_stacked[:12*(numStack-1)]
+                x_prev_stacked[:12] = x_prev_cached[:12]
 
                 # Stacks inputs. holds past input at 30000 if pwm received are still 0
                 if not np.all(pwms_received):
@@ -487,8 +489,8 @@ def nodecontroller():
         elif mf_flag:
             if new_data:
                 # if not pwms_received == u_prev_stacked[4:]:
-                x_prev_stacked[9:] = x_prev_stacked[:9*(numStack-1)]
-                x_prev_stacked[:9] = x_prev_cached[:9]
+                x_prev_stacked[12:] = x_prev_stacked[:12*(numStack-1)]
+                x_prev_stacked[:12] = x_prev_cached[:12]
 
                 u_prev_stacked[4:] = u_prev_stacked[:4*(numStack-1)]
                 u_prev_stacked[:4] = pwms_received
@@ -518,8 +520,8 @@ def nodecontroller():
             # only bother computing when there's new data
             if new_data:
                 # if not pwms_received == u_prev_stacked[4:]:
-                x_prev_stacked[9:] = x_prev_stacked[:9*(numStack-1)]
-                x_prev_stacked[:9] = x_prev_cached[:9]
+                x_prev_stacked[12:] = x_prev_stacked[:12*(numStack-1)]
+                x_prev_stacked[:12] = x_prev_cached[:12]
 
                 u_prev_stacked[4:] = u_prev_stacked[:4*(numStack-1)]
                 u_prev_stacked[:4] = pwms_received
