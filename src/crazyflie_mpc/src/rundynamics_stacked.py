@@ -218,9 +218,9 @@ def run_stack(batch_size, iters, action_len, mean, prev_action, vbat, variance, 
 
   ### Minimize vx, vz, vy
   ### Assume vx in idx 6, vy in idx 7, vz in idx 8 (Subject to change)
-  objective_vals.add_((data_eval[:,:,6].mul_(data_eval[:,:,6])).mul_(1)) # Minimize vx
-  objective_vals.add_((data_eval[:,:,7].mul_(data_eval[:,:,7])).mul_(1)) # Minimize vy
-  objective_vals.add_(((data_eval[:,:,7].mul_(data_eval[:,:,7])).mul_(1)).sub_(0.25)) # Minimize vz^2 - 0.25 for 0.5m goal
+  objective_vals.add_((data_eval[:,:,9].mul_(data_eval[:,:,9])).mul_(1)) # Minimize vx
+  objective_vals.add_((data_eval[:,:,10].mul_(data_eval[:,:,10])).mul_(1)) # Minimize vy
+  objective_vals.add_(((data_eval[:,:,11].mul_(data_eval[:,:,11])).mul_(1)).sub_(0.25)) # Minimize vz^2 - 0.25 for 0.5m goal
 
 
   # slope = (data_eval[:,:,3:6].squeeze()).sub(X[:,3:6])

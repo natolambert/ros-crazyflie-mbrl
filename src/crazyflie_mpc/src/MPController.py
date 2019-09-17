@@ -72,6 +72,12 @@ def callback(data):
     b = np.zeros([1])
     b[0] = data.values[-1]
 
+    # optical flow vx, vy, z
+    flow = np.zeros([1,3])
+    flow[0][0] = data.values[-5]
+    flow[0][1] = data.values[-4]
+    flow[0][2] = data.values[-3]
+
     # Linear accle
     l = np.zeros([1])
     l[0] = data.values[1]
@@ -108,9 +114,10 @@ def callback(data):
     x_prev[6] = imu[0][3] #l_x
     x_prev[7] = imu[0][4] #l_y
     x_prev[8] = imu[0][5] #l_z
-    x_prev[9] = b[0]      # battery
-
-    ### NEW x vars should go here
+    x_prev[9] = flow[0][0] # v_x
+    x_prev[10] = flow[0][1] # v_y
+    x_prev[11] = flow[0][2] # z
+    x_prev[12] = b[0]      # battery
 
     ts[0] = str(t)
     pwms_received[0] = pwms[0][0]
@@ -128,7 +135,7 @@ def callback(data):
     # wrap around issues
     x_prev[x_prev == -90] = 0
 
-    # Checks for collision or dangerous state
+    # Checks for collision or dangerous state # TODO: update for low z from z-ranger???
     if ((abs(x_prev[3]) >= uncontrollable_state) or
         (abs(x_prev[4]) >= uncontrollable_state) or
         ((abs(x_prev[6])+abs(x_prev[7])  >= 32) ) or
@@ -157,7 +164,7 @@ def nodecontroller():
     global logging
     logging = False
 
-    # important varaible for how many previous states to feed to the network
+    # important variable for how many previous states to feed to the network
     numStack = 3
     #set to 3 for 50Hz (as per Roberto)
     global log_battery
@@ -185,7 +192,7 @@ def nodecontroller():
     stop = False
 
     global x_prev
-    x_prev = np.zeros(10)
+    x_prev = np.zeros(13) # FIXME: magic numbers are bad :)
     global pwms_received
     pwms_received = np.zeros(4)
     global ts
@@ -193,10 +200,10 @@ def nodecontroller():
 
     # controller & logging variables
     global x_prev_cached
-    x_prev_cached = np.zeros(10)
+    x_prev_cached = np.zeros(13) # FIXME: magic numbers
 
     global x_prev_delta
-    x_prev_delta = np.zeros(10)
+    x_prev_delta = np.zeros(13) # FIXME: magic numeros
 
     global ts_cached
     ts_cached = np.zeros(1)
@@ -321,11 +328,9 @@ def nodecontroller():
     mpc1 = MPController(PWMequil, N=8000, T=7, variance =6500, numStack = numStack)
     print('...MPC Running')
 
-
-
     # stacked states to pass into network
-    pred_state = torch.zeros(9)
-    x_prev_stacked = np.zeros(numStack*12)
+    pred_state = torch.zeros(12) # FIXME: new dimensions?
+    x_prev_stacked = np.zeros(numStack*12) # FIXME: new dimensions?
     u_prev_stacked = np.ones(numStack*4)*30000. # initial U stacked is defined here
 
     for i in range(5):
@@ -349,7 +354,7 @@ def nodecontroller():
             x_prev_delta = x_prev - x_prev_cached
             x_prev_cached = x_prev #change from LAST state
             ts_cached = int(ts)
-            vbat = x_prev_cached[9]
+            vbat = x_prev_cached[12]
             new_data = True
             # caughtFlag = True
             # if Spinup:
@@ -379,7 +384,7 @@ def nodecontroller():
                 print "Final::: Packet Rx Freq Hz = ", (totalReceived/((millis()- start_tick)/1000))
 
                 ############################ PLOT EACH RUN ####################################
-                if plot_each:
+                if plot_each: # TODO: plot other values such as vx, vy, z
                     with open(log_folder+'flight_log-'+timestr+'.csv') as csvfile:
                         # Load pwm and euler values
                         logged_dat = np.loadtxt(csvfile, delimiter =",")
@@ -448,8 +453,8 @@ def nodecontroller():
             # only bother computing when there's new data
             if new_data:
                 # if not pwms_received == u_prev_stacked[4:]:
-                x_prev_stacked[12:] = x_prev_stacked[:12*(numStack-1)]
-                x_prev_stacked[:12] = x_prev_cached[:12]
+                x_prev_stacked[12:] = x_prev_stacked[:12*(numStack-1)] # FIXME: new dimensions?
+                x_prev_stacked[:12] = x_prev_cached[:12] # FIXME: new dimensions?
 
                 # Stacks inputs. holds past input at 30000 if pwm received are still 0
                 if not np.all(pwms_received):
@@ -571,6 +576,7 @@ def logger(log):
      log.write("{0},{1},{2},".format(str(x_prev_cached[6]),str(x_prev_cached[7]),str(x_prev_cached[8])))
      # log past PWM values
      log.write("{0},{1},{2},{3},".format(pwms_received[0],pwms_received[1],pwms_received[2],pwms_received[3]))
+     # TODO: log optical flow and z-ranger values
      # Log time stamp
      log.write("{0},{1},".format(str(ts_cached), str(OBJ[0])))# str(objval.cpu().detach().numpy())))
      log.write("{0},".format(str(x_prev_cached[-1])))
